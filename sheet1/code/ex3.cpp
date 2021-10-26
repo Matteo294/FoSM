@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 
 using namespace std;
 
@@ -12,6 +13,7 @@ int main(){
         eps /= 2.;
     }
     cout << "Single precision machine epsilon: " << old_eps << endl;
+    cout << 1+old_eps << endl;
 
     // Double precision
     double eps2 = 0.5;
@@ -21,6 +23,7 @@ int main(){
         eps2 /= 2.;
     }
     cout << "Double precision machine epsilon: " << old_eps2 << endl;
+    cout << 1+old_eps2 << endl;
 
     // Long double precision
     long double eps3 = 0.5;
@@ -30,6 +33,7 @@ int main(){
         eps3 /= 2.;
     }
     cout << "Long double precision machine epsilon: " << old_eps3 << endl;
+    cout << 1+old_eps3 << endl;
     
     return 0;
 }
