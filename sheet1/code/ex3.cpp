@@ -33,7 +33,7 @@ int main(){
         eps3 /= 2.;
     }
     cout << "Long double precision machine epsilon: " << old_eps3 << endl;
-    cout << 1+old_eps3 << endl;
+    cout << setprecision(30) << 1+old_eps3 << endl;
     
     return 0;
 }

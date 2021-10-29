@@ -1,0 +1,110 @@
+\documentclass{article}
+\usepackage{packages}
+
+\title{\textbf{Fundamentals of Simulation Methods} \\ \vspace{5pt} \large University of Heidelberg, WiSe 2021/2022 \\ \vspace{5pt} Mandatory assignements - Set 2}
+\date{\textbf{Date:} \today}
+\author{\textbf{Authors:} Matteo Zortea, Anja Heim}
+
+\begin{document}
+\maketitle
+
+\section*{Exercise 3}
+
+\subsubsection*{a)}
+By defining
+\begin{equation}
+    q_i \equiv \frac{\partial \mathcal{L}}{\dot q_i} \qquad i=1,2
+    \label{eq:momenta_definition}
+\end{equation}
+one can rewrite the Lagrangian equations of motion as
+\begin{gather*}
+    \frac{dq_1}{dt} = \frac{\partial \mathcal{L}}{\partial q_1} = -m_2l_1l_2 \dot \phi_1 \dot \phi_2 \sin(\phi_1 - \phi_2) - (m_1 + m_2)gl_1\sin\phi_1 \\
+    \frac{dq_2}{dt} = \frac{\partial \mathcal{L}}{\partial q_2} = m_2l_1l_2 \dot \phi_1 \dot \phi_2 \sin(\phi_1 - \phi_2) - m_2gl_2 \sin \phi_2
+\end{gather*}
+These equations determine the evolution of the momenta $q_1, q_2$. 
+
+\subsubsection*{b)
+}If we define a state vector as $y = (\phi_1, \phi_2, q_1, q_2)T$, the evolution of our system is completely 
+determined by the set of equations 
+\begin{equation*}
+    \frac{dy}{dt} = f(y)
+\end{equation*}
+which, in matrix form, reads
+\begin{equation}  
+    \begin{pmatrix}
+        \frac{d\phi_1}{dt} \\
+        \\
+        \frac{d\phi_2}{dt} \\
+        \\
+        \frac{dq_1}{dt} \\
+        \\
+        \frac{dq_2}{dt}
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+        \dot \phi_1 \\
+        \\
+        \dot \phi_2 \\
+        \\
+        -m_2l_1l_2 \dot \phi_1 \dot \phi_2 \sin(\phi_1 - \phi_2) - (m_1 + m_2)gl_1\sin\phi_1 \\
+        \\
+        m_2l_1l_2 \dot \phi_1 \dot \phi_2 \sin(\phi_1 - \phi_2) - m_2gl_2 \sin \phi_2
+    \end{pmatrix}
+    \label{eq:diff_eq_matrix_form}
+\end{equation}
+We now need to obtain the expression for $\dot \phi_i \quad i=1,2$. In order to do this, let us explicitly write the expression for $q_1, q_2$ using their definition \ref{eq:momenta_definition}.
+\begin{gather*}
+    q_1 = \frac{\partial \mathcal{L}}{\partial \dot q_1} = (m_1 + m_2)l_1^2 \dot \phi_1 + m_2l_1l_2 \dot \phi_2 cos(\phi_1 - \phi_2) \equiv \alpha \dot \phi_1 + \beta \dot \phi_2 \\
+    q_2 = \frac{\partial \mathcal{L}}{\partial \dot q_2} = m_2 l_1 l_2 \dot \phi_1 \cos(\phi_1 - \phi_2) + m_2 l_2^2 \dot \phi_2 \equiv \beta \dot \phi_1 + \gamma \dot \phi_2
+\end{gather*}
+which can be written in matrix form as 
+\begin{equation*}
+    \begin{pmatrix}
+        q_1 \\
+        q_2
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+        \alpha & \beta \\
+        \beta & \gamma
+    \end{pmatrix}
+    \begin{pmatrix}
+        \dot \phi_1 \\
+        \dot \phi_2
+    \end{pmatrix}
+\end{equation*}
+We can invert these expressions using the Kramer's rule
+\begin{gather*}
+    \dot \phi_1 = \frac{\begin{vmatrix}q_1 & \beta \\ q_2 & \gamma \end{vmatrix}}{\begin{vmatrix}\alpha & \beta \\ \beta & \gamma \end{vmatrix}} = \frac{\gamma}{\alpha\gamma - \beta^2}q_1 - \frac{\beta}{\alpha\gamma - \beta^2}q_2 \qquad \qquad
+    \dot \phi_2 = \frac{\begin{vmatrix}\alpha & q_1 \\ \beta & q_2 \end{vmatrix}}{\begin{vmatrix}\alpha & \beta \\ \beta & \gamma \end{vmatrix}} = \frac{\alpha}{\alpha \gamma - \beta^2}q_2 - \frac{\beta}{\alpha\gamma - \beta^2}q_2 
+\end{gather*}
+and by popping in the expressions for $\alpha, \beta, \gamma$
+\begin{gather*}
+    \dot \phi_1 = \frac{1}{m_1 l_1^2(1 + m_2/m_1 \sin^2(\phi_1 - \phi_2))} \, q_1 - \frac{cos(\phi_1 - \phi_2)}{m_1l_1l_2(1+m_2/m_1\sin^2(\phi_1 - \phi_2))} \, q_2 \\
+    \dot \phi_2 = - \frac{1}{\mu l_2^2(1 + m_2/m_1\sin^2(\phi_1 - \phi_2))} \, q_2 - \frac{\cos(\phi_1 - \phi_2)}{m_1 l_1 l_2 (1+m_2/m_1 \sin^2(\phi_1 - \phi_2))} \, q_1
+\end{gather*}
+where $\mu = \frac{m_1 m_2}{m_1 + m_2}$ is the reduced mass. \\
+We have now obtained all the expressions needed to solve equation \ref{eq:diff_eq_matrix_form} which now explicitly reads
+\begin{equation*}
+    \begin{pmatrix}
+        \frac{d\phi_1}{dt} \\
+        \\
+        \frac{d\phi_2}{dt} \\
+        \\
+        \frac{dq_1}{dt} \\
+        \\
+        \frac{dq_2}{dt}
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+        \frac{1}{m_1 l_1^2(1 + m_2/m_1 \sin^2(\phi_1 - \phi_2))} \, q_1 - \frac{cos(\phi_1 - \phi_2)}{m_1l_1l_2(1+m_2/m_1\sin^2(\phi_1 - \phi_2))} \, q_2 \\
+        \\
+        -\frac{1}{\mu l_2^2(1 + m_2/m_1\sin^2(\phi_1 - \phi_2))} \, q_2 - \frac{\cos(\phi_1 - \phi_2)}{m_1 l_1 l_2 (1+m_2/m_1 \sin^2(\phi_1 - \phi_2))} \, q_1 \\
+        \\
+        -m_2l_1l_2 \dot \phi_1 \dot \phi_2 \sin(\phi_1 - \phi_2) - (m_1 + m_2)gl_1\sin\phi_1 \\
+        \\
+        m_2l_1l_2 \dot \phi_1 \dot \phi_2 \sin(\phi_1 - \phi_2) - m_2gl_2 \sin \phi_2
+    \end{pmatrix}
+\end{equation*}
+\subsubsection*{c)}
+\end{document}
