@@ -5,119 +5,90 @@
 
 using namespace std;
 
-// Declaration of functions. Functions are implemented after the main function
-vector<double> RHS(vector<double> y, vector<double> phidot); // Evaluate right hand side of equation ydot = f(y)
-vector<double> integrate_euler(double dt, vector<double> y_old, vector<double> phidot);
-vector<double> integrate_RK2(double dt, vector<double> y_old, vector<double> phidot); // Makes one integration step: depends on the chosen integration scheme
-vector<double> get_phidot(vector<double> y); // velocity as a function of conj momenta
-double evaluate_energy(vector<double> y, vector<double> phidot);
+void RHS(); // right hand side function of the diff. eq. automatically store the results in the matrix f
+double calculate_energy();
+void euler_step(double dt); // perform an euler integration step with step length dt
+void RK2_step(double dt); // perform an RKS predictor-corrector integration step with step length dt
 
-double m1=1.1, m2=1.1, l1=1.1, l2=1.1, g=1.1, mu=m1*m2/(m1+m2);
+// Global variables
+const double m1=0.5, m2=1.0, l1=2.0, l2=1.0, g=1.0; // physical constants of the problem
+const double dt = 0.05; // integration step
+vector<double> y(4, 0.0); // state variables phi1, phi2, q1, q2
+vector<double> f(4, 0.0); // matrix to store the value of the RHS function
+double C, c1, c2, c3, c4; // useful to evaluate RHS
+const int nsteps = 2000;
 
 int main(){
 
-    // File to print data for plotting
+    // Initial conditions
+    y[0] = 50*M_PI/180.;
+    y[1] = -120*M_PI/180.;
+    y[2] = 0.;
+    y[3] = 0.;
+
+    // Two files to store results: one for plotting (state variables) and one for the animation (cartesian coordinates)
     ofstream datafile;
     datafile.open("data.csv");
-    datafile << "t,phi1,phi2,phi1dot,phi2dot,p1,p2,deltaE" << endl;
-    // File for animation
+    datafile << "t,phi1,phi2,phi1dot,phi2dot,deltaE" << endl;
     ofstream animfile;
     animfile.open("animation.csv");
-    animfile << "x1,y1,x2,y2" << endl;
+    animfile << "x1,x2,y1,y2" << endl;
 
-    // Initial conditions
-    const double phi1_0 = (double) M_PI/8.;
-    const double phi2_0 = (double) M_PI/3.;
-    const double p1_0 = 0;
-    const double p2_0 = 0;
-
-    // Parameters
-    const int nsteps = 2000; // Number of integration steps
-    const double dt = 0.05; // time step
-    const double g = 1; // Gravity
-
-    // State variables
-    double t;
-    vector<double> y(4, 0);
-    vector<double> phidot(2, 0);
-    double energy, energy0;
-    // Cartesian coordintes
+    double t=0.0;
+    double E0 = calculate_energy();
     double x1, x2, y1, y2;
-
-    // Assign initial conditions
-    t = 0.0;
-    y[0] = phi1_0;
-    y[1] = phi2_0;
-    y[2] = p1_0;
-    y[3] = p2_0;
-    phidot = get_phidot(y);
-
-    energy = evaluate_energy(y, phidot);
-    energy0 = energy;
-    cout << energy0 << endl;
-    // Integration
     for(int i=0; i<nsteps; i++){
-        phidot = get_phidot(y);
-        y = integrate_RK2(dt, y, phidot);
+        RK2_step(dt);        
         t += dt;
-        energy = evaluate_energy(y, phidot);
-        datafile << t << "," << y[0] << "," << y[1] << "," << phidot[0] << "," << phidot[1] << "," << y[2] << "," << y[3] << "," << (energy-energy0)/energy0 << endl;
-
-        // Cartesian coordinates for the animation
+        // Printing to files
+        datafile << t << "," << y[0] << "," << y[1] << "," << y[2] << "," << y[3] << "," << (calculate_energy() - E0)/E0 << endl;
         x1 = l1*sin(y[0]);
-        y1 = -l1*cos(y[0]);
-        x2 = x1 + l2*sin(y[2]);
-        y2 = y1 - l2*cos(y[2]);
-        animfile << x1 << "," << y1 << "," << x2 << "," << y2 << endl;
+        x2 = x1 + l2*sin(y[1]);
+        y1 = - l1*cos(y[0]);
+        y2 = y1 - l2*cos(y[1]);
+        animfile << x1 << "," << x2 << "," << y1 << "," << y2 << endl;
     }
 
     return 0;
 }
 
-vector<double> RHS(vector<double> y, vector<double> phidot){
-    vector<double> f(4, 0);
-    f[0] = phidot[0];
-    f[1] = phidot[1];
-    f[2] = -m2*l1*l2*phidot[0]*phidot[1]*sin(y[0]-y[1]) - (m1+m2)*g*l1*sin(y[0]);
-    f[3] = m2*l1*l2*phidot[0]*phidot[1]*sin(y[0]-y[1]) - m2*g*l2*sin(y[1]);
-    return f;
+void RHS(){
+    C = m2 * l1 * l1 * l2 * l2 * (m1 + m2 * pow(sin(y[0] - y[1]), 2));
+    c1 = m2 * l2 * l2 / C;
+    c2 = -m2 * l1 * l2 * cos(y[0] - y[1]) / C;
+    c3 = c2;
+    c4 = (m1 + m2) * l1 * l1 / C;
+    f[0] = c1 * y[2] + c3 * y[3]; // phi1dot, can be recycled and re-used in the evaluation of qdot
+    f[1] = c3 * y[2] + c4 * y[3]; // phi2dot, can be recycled and re-used in the evaluation of qdot
+    f[2] = -m2 * l1 * l2 * f[0] * f[1] * sin(y[0] - y[1]) - (m1 + m2) * g * l1 * sin(y[0]);
+    f[3] = m2 * l1 * l2  * f[0] * f[1] * sin(y[0] - y[1]) - m2 * g * l2 * sin(y[1]);
+
+
 }
 
-vector<double> integrate_euler(double dt, vector<double> y_old, vector<double> phidot){
-    vector<double> ynew(4);
-    ynew = RHS(y_old, phidot);
+double calculate_energy(){
+    //return 0.5*m1*pow(l1*f[0], 2) + 0.5*m2*(pow(l1*f[0], 2) + pow(l2*f[1], 2) + 2*l1*l2*f[0]*f[1]*cos(y[0]-y[1])) + (m1+m2)*g*l1*(1 - cos(y[0])) + l2*(1 - cos(y[1]));
+    return y[2] * f[0] + y[3] * f[1] - (m1 + m2)/2 * l1 * l1 * f[0] * f[0] - m2/2 * l2 * l2 * f[1] * f[1] - m2 * l1 * l2 * f[0] * f[1] * cos(y[0] - y[1]) + (m1 + m2) * g * l1 * (1 - cos(y[0])) + l2 * (1 - cos(y[1]));
+}
+
+void euler_step(double dt){
+    RHS();
     for(int i=0; i<4; i++){
-        ynew[i] = y_old[i] + dt*ynew[i];
+        y[i] += dt*f[i];
     }
-    return ynew;
-}
+}   
 
-vector<double> integrate_RK2(double dt, vector<double> y_old, vector<double> phidot){
-    vector<double> aux(4); // Auxiliary variable
-    vector<double> k1(4);
-    vector<double> ynew(4);
-    vector<double> phidot_new(4);
-    k1 = RHS(y_old, phidot);
-    for(int i=0; i<4; i++){
-        aux[i] = y_old[i] + 0.5*dt*k1[i];
+void RK2_step(double dt){
+    RHS();
+    vector<double> k1(4, 0.0), k2(4, 0.0), aux(4, 0.0);
+    for(int i = 0; i < 4; i++) {
+        k1[i] = dt * f[i];
+        aux[i] = y[i];
+        y[i] = y[i] + k1[i]/2.;
     }
-    phidot_new = get_phidot(aux);
-    aux = RHS(aux, phidot_new); // k2
-    for(int i=0; i<4;i++){
-        ynew[i] = y_old[i] + dt*aux[i];
+    RHS();
+    for (int i = 0; i < 4; i++) {
+        k2[i] = dt * f[i];
+        y[i] = aux[i] + k2[i];
     }
-    return ynew;
-}
-
-vector<double> get_phidot(vector<double> y){
-    vector<double> phidot(2, 0);
-    double fact = m1*l1*(1 + m2/m1*pow(sin(y[0]-y[1]), 2));
-    phidot[0] = y[2]/l1/fact - cos(y[0]-y[1])*y[3]/fact/l2;
-    phidot[1] = -cos(y[0]-y[1])*y[2]/l2/fact - y[3]*(m1+m2)/m2/l2/fact;
-    return phidot;
-}
-
-double evaluate_energy(vector<double> y, vector<double> phidot){
-    return 0.5*m1*pow(l1*phidot[0], 2) * 0.5*m2*(pow(l1*phidot[0], 2) + pow(l2*phidot[1], 2) + 2*l1*l2*phidot[0]*phidot[1]*cos(y[0]-y[1])) + 
-    m1*g*l1*(1-cos(y[0])) + m2*g*(l1*(1-cos(y[0])) + l2*(1-cos(y[1])));
 }

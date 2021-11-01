@@ -5,22 +5,22 @@ from matplotlib.animation import FuncAnimation
 global data 
 data = pd.read_csv("animation.csv")
 
-Ltot = 3
-xmin = -Ltot
-xmax = Ltot
-ymin = -Ltot
-ymax = Ltot
+Ltot = 5
+xmin = -Ltot-0.5
+xmax = Ltot+0.5
+ymin = -Ltot-0.5
+ymax = Ltot+0.5
 
 fig = plt.figure()
 ax = plt.axes()
-pendulum1, = ax.plot([0, 2], [0, 2], color='black', linewidth=3)
-pendulum2, = ax.plot([0, 2], [0, 2], color='black', linewidth=3)
-balls, = ax.plot([0, 0], [0, 0], 'o', markersize=15, color='black')
 axes = fig.gca()
 axes.axis("equal")
 axes.set_xlim(xmin, xmax)
 axes.set_ylim(ymin, ymax)
-#axes.set_axis_off()
+axes.set_axis_off()
+pendulum1, = ax.plot([0, 2], [0, 2], color='black', linewidth=3)
+pendulum2, = ax.plot([0, 2], [0, 2], color='black', linewidth=3)
+balls, = ax.plot([0, 0], [0, 0], 'o', markersize=15, color='black')
 
 def init():
     pendulum1.set_data([], [])
@@ -34,7 +34,6 @@ def animate(i):
     return pendulum1, pendulum2, balls
 
 anim = FuncAnimation(fig, animate, init_func=init, blit=True, interval=20)
-
 plt.show()
 
 data = pd.read_csv("animation.csv")
