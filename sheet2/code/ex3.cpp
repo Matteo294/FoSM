@@ -22,17 +22,17 @@ const int nsteps = 2000;
 int main(){
 
     // Initial conditions
-    y[0] = 50*M_PI/180.;
+    y[0] = 51*M_PI/180.;
     y[1] = -120*M_PI/180.;
     y[2] = 0.;
     y[3] = 0.;
 
     // Two files to store results: one for plotting (state variables) and one for the animation (cartesian coordinates)
     ofstream datafile;
-    datafile.open("data.csv");
+    datafile.open("data_newIC.csv");
     datafile << "t,phi1,phi2,phi1dot,phi2dot,deltaE" << endl;
     ofstream animfile;
-    animfile.open("animation.csv");
+    animfile.open("animation_newIC.csv");
     animfile << "x1,x2,y1,y2" << endl;
 
     double t=0.0;
