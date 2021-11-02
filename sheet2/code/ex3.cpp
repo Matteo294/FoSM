@@ -9,6 +9,7 @@ void RHS(); // right hand side function of the diff. eq. automatically store the
 double calculate_energy();
 void euler_step(double dt); // perform an euler integration step with step length dt
 void RK2_step(double dt); // perform an RKS predictor-corrector integration step with step length dt
+void RK4_step(double dt); // perform a RK4 integration step with step length dt
 
 // Global variables
 const double m1=0.5, m2=1.0, l1=2.0, l2=1.0, g=1.0; // physical constants of the problem
@@ -38,9 +39,9 @@ int main(){
     double E0 = calculate_energy();
     double x1, x2, y1, y2;
     for(int i=0; i<nsteps; i++){
-        RK2_step(dt);        
+        RK4_step(dt);        
         t += dt;
-        // Printing to files
+       // Printing to files
         datafile << t << "," << y[0] << "," << y[1] << "," << y[2] << "," << y[3] << "," << (calculate_energy() - E0)/E0 << endl;
         x1 = l1*sin(y[0]);
         x2 = x1 + l2*sin(y[1]);
@@ -90,5 +91,30 @@ void RK2_step(double dt){
     for (int i = 0; i < 4; i++) {
         k2[i] = dt * f[i];
         y[i] = aux[i] + k2[i];
+    }
+}
+
+void RK4_step(double dt){
+    RHS();
+    vector<double> k1(4, 0.0), k2(4, 0.0), k3(4, 0.0), k4(4, 0.0), aux(4,0.0);
+    for(int i = 0; i < 4; i++) {
+        k1[i] = dt * f[i];
+        aux[i] = y[i];
+        y[i] = y[i] + k1[i]/2.;
+    }
+    RHS();
+    for(int i = 0; i < 4; i++) {
+        k2[i] = dt * f[i];
+        y[i] = aux[i] + k2[i]/2.;
+    }
+    RHS();
+    for(int i = 0; i < 4; i++) {
+        k3[i] = dt * f[i];
+        y[i] = aux[i] + k3[i];
+    }
+    RHS();
+    for(int i = 0; i < 4; i++) {
+        k4[i] = dt * f[i];
+        y[i] = aux[i] + (k1[i] + 2.0*k2[i] + 2.0*k3[i] + k4[i])/6.;
     }
 }
