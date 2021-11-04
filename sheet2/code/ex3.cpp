@@ -80,17 +80,16 @@ void euler_step(double dt){
 }   
 
 void RK2_step(double dt){
-    RHS();
-    vector<double> k1(4, 0.0), k2(4, 0.0), aux(4, 0.0);
-    for(int i = 0; i < 4; i++) {
-        k1[i] = dt * f[i];
-        aux[i] = y[i];
-        y[i] = y[i] + k1[i]/2.;
+    vector<double> y_old(3, 0.0);
+    vector<double> f_old(3, 0.0);
+    for(int i=0; i<4; i++){
+        f_old[i] = f[i];
+        y_old[i] = y[i];
+        y[i] += dt*f[i];
     }
     RHS();
-    for (int i = 0; i < 4; i++) {
-        k2[i] = dt * f[i];
-        y[i] = aux[i] + k2[i];
+    for(int i=0; i<4; i++){
+        y[i] = y_old[i] + 0.5*dt*(f_old[i] + f[i]);
     }
 }
 
