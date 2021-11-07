@@ -3,6 +3,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+compare = True # if True compares normal RK2 with adaptive step RK2. Otherwise just normal RK2
+
 
 def Tf(T): # enter T in Kelvin!!; =^ rhs of ODE
 
@@ -28,7 +30,7 @@ def RK2pc(Deltat):
         T.append(Tnew)
         t.append(Deltat*(i+1))
         i += 1
-    print("Predictor-corrector:", i, "steps")
+    print("RK2:", i, "steps")
     return T, t
 
 # Adaptive stepszie RK2
@@ -53,7 +55,7 @@ def RK2as(Deltat, err_max):
         err = abs(Tnew_full - Tnew_half)
         Deltat = 2*Deltat * (err_max/err)**(1/3)
         i += 1
-    print("Adaptive stepsize:", i, "steps" )
+    print("Adaptive RK2:", i, "steps \n" )
     return T,t
 
 
@@ -62,35 +64,28 @@ if __name__ == "__main__":
     Deltats = [1e10, 2e10, 5e10, 8e10, 8.5e10, 8.8e10, 8.9e10, 9e10]
 
     for i in range(len(Deltats)):
+        plt.figure()
         T, t = RK2pc(Deltats[i])
-        j = 0
-        #while T[j] > 2e4:
-        #    j += 1
-        fig = plt.figure()
-        plt.plot(t,np.log(T),'-k', label = 'temperature evolution ln(T(t))')
+        plt.plot(t, np.log(T),'-', color='mediumspringgreen', label = 'RK2 solution')
+        if compare:
+            T2, t2 = RK2as(Deltats[i], 50)
+            plt.plot(t2, np.log(T2),'-', color='blue', label = 'Adaptive step RK2 solution')
+
+        # Plotting settins
         plt.xlabel('time (s)')
         plt.ylabel('ln(T)')
-        plt.hlines(np.log(2e4),t[0],t[-1],colors='r',linestyles='--',label='$T=T_0$')
-        #plt.plot(t[j],np.log(T[j]),'ro',label='$T=T_0$')
+        plt.hlines(np.log(2e4),t[0],t[-1], colors='r',linestyles='--',label='$T=T_0$')
         plt.legend()
-        plt.savefig(f'RK2pc_deltat{i}.png')
-        #plt.show()   
-        print(len(T), end=" ", flush=True)
+        ax = plt.gca()
+        ax.legend()
+        axR = ax.twinx()
+        axT = ax.twiny()
+        ax.tick_params(direction='in')
+        axT.tick_params(direction='in')
+        axR.tick_params(direction='in')
+        axR.yaxis.set_major_formatter(plt.NullFormatter())
+        axT.xaxis.set_major_formatter(plt.NullFormatter())
+        plt.savefig(f'deltat{i}.png')
     
     print("\n")
-    
-    for i in range(len(Deltats)):
-        T, t = RK2as(Deltats[i], 50)
-        j = 0
-        #while T[j] > 2e4:
-        #    j += 1
-        fig = plt.figure()
-        plt.plot(t,np.log(T),'-k', label = 'temperature evolution ln(T(t))')
-        plt.xlabel('time (s)')
-        plt.ylabel('ln(T)')
-        plt.hlines(np.log(2e4),t[0],t[-1],colors='r',linestyles='--',label='$T=T_0$')
-        #plt.plot(t[j],np.log(T[j]),'ro',label='$T=T_0$')
-        plt.legend()
-        plt.savefig(f'RK2as_deltat{i}_as.png')
-        #plt.show()   
-        print(len(T), end="", flush=True)
+
