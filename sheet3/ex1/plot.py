@@ -7,8 +7,6 @@ plt.plot(data['x1'], data['y1'])
 plt.plot(data['x2'], data['y2'])
 plt.show()
 
-plt.plot(range(len(data['energy'])), data['energy'])
-plt.show()
-
 plt.plot(range(len(data['deltaE'])), data['deltaE'])
+plt.ylim([-0.1, 0.1])
 plt.show()

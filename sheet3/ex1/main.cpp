@@ -7,7 +7,7 @@ using namespace std;
 
 // Unit conversion
 const long double Msun=1.99e30, xscale=1.496e11, vscale=2.98e4, tscale=xscale/vscale;
-const int nsteps=1e5;
+const int nsteps=5e3;
 // Constants of the problem
 const double Ms=1.0, Mp=1e-3, G=6.67408e-11*Msun/pow(xscale,3)*pow(tscale,2), dt=5e-4;
 // Initial conditions
@@ -51,9 +51,34 @@ void kick_drift_kick(double dt){
         vs[i] -= 0.5*dt*force[i]/Ms;
     }
 }
+void rk2(double dt){
+    vector<double> force_old(3, 0.0), xp_old(3, 0.0), xs_old(3, 0.0), vp_old(3, 0.0), vs_old(3, 0.0);
+    compute_force();
+    for(int i=0; i<3; i++){
+        // Copy actual variables
+        force_old[i] = force[i];
+        xp_old[i] = xp[i];
+        xs_old[i] = xs[i];
+        vp_old[i] = vp[i];
+        vs_old[i] = vs[i];
+        xp[i] += dt*vp[i];
+        vp[i] += dt*force[i]/Mp;
+        xs[i] += dt*vs[i];
+        vs[i] += dt*force[i]/Ms;
+    }
+    compute_force();
+    for(int i=0; i<3; i++){
+        xp[i] = xp_old[i] + 0.5*dt*(vp[i] + vp_old[i]);
+        vp[i] = vp_old[i] + 0.5*dt*(force[i]+force_old[i])/Mp;
+        xs[i] = xs_old[i] + 0.5*dt*(vs[i] + vs_old[i]);
+        vp[i] = 
+    }
+}
 
-double energy(){
-    return -G*Mp*Ms/norm3D(xp) + 0.5*Mp*pow(norm3D(vp), 2) + 0.5*Ms*pow(norm3D(vs), 2);
+double calculate_energy(){
+    vector<double> diff(3, 0.0);
+    for(int i=0; i<3; i++) diff[i] = xs[i] - xp[i];
+    return -G*Mp*Ms/norm3D(diff) + 0.5*Mp*pow(norm3D(vp), 2) + 0.5*Ms*pow(norm3D(vs), 2);
 }
 
 int main(){
@@ -63,10 +88,10 @@ int main(){
     outfile << "x1,y1,z1,vx1,vy1,vz1,x2,y2,z2,vx2,vy2,vz2,energy,deltaE" << endl;
     outfile << xp[0] << "," << xp[1] << "," << xp[2] << "," << vp[0] << "," << vp[1] << "," << vp[2] << endl;
 
-    E0 = energy();
+    E0 = calculate_energy();
     for(int i=0; i<nsteps; i++){
         kick_drift_kick(dt);
-        E = energy();
+        E = calculate_energy();
         outfile << xp[0] << "," << xp[1] << "," << xp[2] << "," << vp[0] << "," << vp[1] << "," << vp[2] << ","
                 << xs[0] << "," << xs[1] << "," << xs[2] << "," << vs[0] << "," << vs[1] << "," << vs[2] << "," 
                 << E << "," << abs(E-E0)/E0 << endl;
