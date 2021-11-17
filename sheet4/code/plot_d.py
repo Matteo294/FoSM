@@ -1,23 +1,25 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-times_tree = np.loadtxt('N-500-1000-2000-4000/times_tree.dat')
+times_tree = np.loadtxt('./times_tree.dat')
 
-times_direct = np.loadtxt('N-500-1000-2000-4000/times_direct.dat')
+times_direct = np.loadtxt('./times_direct.dat')
 
-N = np.array((500,1000,2000,4000))
+N = np.array((5000,10000,20000,40000))
 
 # lin reg:
 
 k1, d1 = np.polyfit(np.log(N),np.log(times_tree[:,1]),1)
-k2, d2 = np.polyfit(np.log(N),np.log(times_direct[:,1]),1)
+#k2, d2 = np.polyfit(np.log(N),np.log(times_direct[:,1]),1)
+k2, d2 = np.polyfit(np.log(N),np.log(times_direct[:]),1)
+
 
 fig = plt.figure()
 
 plt.plot(N,times_tree[:,1],'bo',label="tree")
 plt.plot(N,N**k1*np.exp(d1),'b-',label=f"{k1:.2f}*log(N)+{d1:.2f}")
-plt.plot(N,times_direct[:,1],'xr',label="direct")
-#plt.plot(N,times_direct[:],'xr',label="direct")
+#plt.plot(N,times_direct[:,1],'xr',label="direct")
+plt.plot(N,times_direct[:],'xr',label="direct")
 plt.plot(N,N**k2*np.exp(d2),'r-',label=f"{k2:.2f}*log(N)+{d2:.2f}")
 plt.title(r'$\theta$ = 0.4')
 plt.xscale('log')
