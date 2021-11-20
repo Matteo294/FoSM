@@ -37,15 +37,16 @@ class Grid:
         self.W0[k,l] += 1
         # Update weights for the first order
         epsx, epsy = self.get_eps(self.particles[-1])
-        self.W1[k,l] += epsx*epsy
-        self.W1[k,l+1] += 1
-        self.W1[k,l-1] += 1
-        self.W1[k+1,l] += 1
-        self.W1[k+1,l+1] += 1
-        self.W1[k+1,l-1] += 1
-        self.W1[k-1,l] += 1
-        self.W1[k-1,l+1] += 1
-        self.W1[k-1,l-1] += 1
+
+        self.W1[k,l] += epsx * epsy
+        self.W1[k,l+1] += epsx * (1-self.top_hat(epsy))*(1-epsy)
+        self.W1[k,l-1] += epsx * self.top_hat(epsy)*(1-epsy)
+        self.W1[k+1,l] += (1-self.top_hat(epsx))*(1-epsx) * epsy
+        self.W1[k+1,l+1] += (1-self.top_hat(epsx))*(1-epsx) * (1-self.top_hat(epsy))*(1-epsy)
+        self.W1[k+1,l-1] += (1-self.top_hat(epsx))*(1-epsx) * self.top_hat(epsy)*(1-epsy)
+        self.W1[k-1,l] += self.top_hat(epsx)*(1-epsx) * epsy
+        self.W1[k-1,l+1] += self.top_hat(epsx)*(1-epsx) * (1-self.top_hat(epsy))*(1-epsy)
+        self.W1[k-1,l-1] += self.top_hat(epsx)*(1-epsx) * self.top_hat(epsy)*(1-epsy)
         # Update weights for the second order
 
     # Get indices of the cell closest to position r
@@ -73,16 +74,11 @@ class Grid:
             c = [part.k, part.l]
         dist_x = part.xh-part.k+self.N/2
         dist_y = part.yh-part.l+self.N/2
-        return (dist_x, dist_y)
+        return float(dist_x), float(dist_y)
     
-    def top_hat(x):
+    def top_hat(self, x):
         if abs(x) > 0.5:
             return 0
         else:
             return 1
-
-    # calculates value of rho for cell (k,l)
-    def calculate_rho(k,l):
-        for part in self.particles:
-            return 
     
