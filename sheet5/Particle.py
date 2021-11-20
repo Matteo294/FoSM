@@ -7,40 +7,15 @@ import numpy as np
 # add particles to the grid with the subclass Particle
 ##########################################################
 class Grid:
-    def __init__(self, H, N):
-        self.H = H 
+    def __init__(self, H, N, m=1):
+        self.H = H
         self.N = N
         self.h = 2*H/N
+        self.m = m
         self.particles = []
-
-    # Adds a particle to the grid at position r
-    def add_particle(self, r):
-        self.particles.append(self.Particle(r, self))
-
-    # Get indices of the cell closest to position r
-    def find_kl(self, r):
-        if r[0] > 0:
-            k = int(r[0]/self.h) + 1
-        else:
-            k = int(r[0]/self.h) - 1
-        if r[1] > 0:
-            l = int(r[1]/self.h) + 1
-        else:
-            l = int(r[1]/self.h) - 1
-        return (k,l)
-    
-    def plot_grid(self):
-        for part in self.particles:
-            color = [np.random.rand() for _ in range(3)]
-            plt.fill_between([part.k, part.k-part.sgn_x], part.l, part.l-part.sgn_y, alpha=0.7, color=color) # complicated to explain this line, but just try it on paper to see it's correct
-            plt.scatter(part.xh, part.yh, color='black')    
-        edges = np.linspace(-self.H, self.H, self.N+1)
-        plt.xticks(edges)
-        plt.yticks(edges)
-        plt.grid()
-        plt.xlim([-self.H, self.H])
-        plt.ylim([-self.H, self.H])
-        plt.show()
+        self.W0 = np.zeros((N, N)) # weights matrix zeroth order
+        self.W1 = np.zeros((N, N)) # weights matrix first order
+        self.W2 = np.zeros((N, N)) # weights matrix second order
 
     class Particle:
         def __init__(self, r, grid_instance):
@@ -51,11 +26,63 @@ class Grid:
             self.k, self.l = self.grid.find_kl(self.r) # get indices of the closest cell
             self.xh = self.x/self.grid.h # x coordinate in units of h
             self.yh = self.y/self.grid.h # y coordinate in units of h
-            # The following variables keep track of the sign of the coordinates (will be useful)
-            self.sgn_x = 1
-            self.sgn_y = 1
-            if self.x < 0:
-                self.sgn_x = -1
-            if self.y < 0:
-                self.sgn_y = -1
+            self.rg = [self.xh, self.yh] # r in units of h
+
+    # Adds a particle to the grid at position r
+    def add_particle(self, r):
+        self.particles.append(self.Particle(r, self))
+        k = self.particles[-1].k
+        l = self.particles[-1].l
+        # Update weights for zeroth order
+        self.W0[k,l] += 1
+        # Update weights for the first order
+        epsx, epsy = self.get_eps(self.particles[-1])
+        self.W1[k,l] += epsx*epsy
+        self.W1[k,l+1] += 1
+        self.W1[k,l-1] += 1
+        self.W1[k+1,l] += 1
+        self.W1[k+1,l+1] += 1
+        self.W1[k+1,l-1] += 1
+        self.W1[k-1,l] += 1
+        self.W1[k-1,l+1] += 1
+        self.W1[k-1,l-1] += 1
+        # Update weights for the second order
+
+    # Get indices of the cell closest to position r
+    def find_kl(self, r):
+        k = int((self.H+r[0])/self.h)
+        l = int((self.H+r[1])/self.h)
+        return (k,l)
+    
+    def plot_grid(self):
+        for part in self.particles:
+            color = [np.random.rand() for _ in range(3)]
+            plt.fill_between([part.k-self.N/2, part.k-self.N/2+1], part.l-self.N/2, part.l-self.N/2+1, alpha=0.7, color=color) # complicated to explain this line, but just try it on paper to see it's correct
+            plt.scatter(part.xh, part.yh, color='black')    
+        edges = np.linspace(-self.N/2, self.N/2, self.N+1)
+        plt.xticks(edges)
+        plt.yticks(edges)
+        plt.grid()
+        plt.xlim([-self.N/2, self.N/2])
+        plt.ylim([-self.N/2, self.N/2])
             
+    # Given a particle calculates distance (in units of h) from lower left corner of cell c=(k,l) and the particle position
+    # if c is not provided it uses the closest cell to the particle
+    def get_eps(self, part, c=None):
+        if c is None:
+            c = [part.k, part.l]
+        dist_x = part.xh-part.k+self.N/2
+        dist_y = part.yh-part.l+self.N/2
+        return (dist_x, dist_y)
+    
+    def top_hat(x):
+        if abs(x) > 0.5:
+            return 0
+        else:
+            return 1
+
+    # calculates value of rho for cell (k,l)
+    def calculate_rho(k,l):
+        for part in self.particles:
+            return 
+    
