@@ -1,11 +1,7 @@
 from matplotlib import pyplot as plt 
 import numpy as np
 
-###################### Grid class ########################
-# Creates a 2D grid from -H to H divided into N^2 cells
-# The side length of one square is h
-# add particles to the grid with the subclass Particle
-##########################################################
+############################# Grid class ###########################
 class Grid:
     def __init__(self, H, N, m=1):
         self.H = H
@@ -37,7 +33,6 @@ class Grid:
         self.W0[k,l] += 1
         # Update weights for the first order
         epsx, epsy = self.get_eps(self.particles[-1])
-
         self.W1[k,l] += epsx * epsy
         self.W1[k,l+1] += epsx * (1-self.top_hat(epsy))*(1-epsy)
         self.W1[k,l-1] += epsx * self.top_hat(epsy)*(1-epsy)
@@ -48,7 +43,18 @@ class Grid:
         self.W1[k-1,l+1] += self.top_hat(epsx)*(1-epsx) * (1-self.top_hat(epsy))*(1-epsy)
         self.W1[k-1,l-1] += self.top_hat(epsx)*(1-epsx) * self.top_hat(epsy)*(1-epsy)
         # Update weights for the second order
-
+        epsx0, epsy0 = self.get_eps(self.particles[-1], [self.particles[-1].k-1, self.particles[-1].l-1]) 
+        epsx1, epsy1 = self.get_eps(self.particles[-1])
+        epsx2, epsy2 = self.get_eps(self.particles[-1], [self.particles[-1].k+1, self.particles[-1].l+1]) 
+        self.W2[k,l] += self.f(epsx1)*self.f(epsy1)
+        self.W2[k,l+1] += self.f(epsx1)*self.f(epsy2)
+        self.W2[k,l-1] += self.f(epsx1)*self.f(epsy0)
+        self.W2[k+1,l] += self.f(epsx2)*self.f(epsy1)
+        self.W2[k+1,l+1] += self.f(epsx2)*self.f(epsy2)
+        self.W2[k+1,l-1] += self.f(epsx2)*self.f(epsy0)
+        self.W2[k-1,l] += self.f(epsx0)*self.f(epsy1)
+        self.W2[k-1,l+1] += self.f(epsx0)*self.f(epsy2)
+        self.W2[k-1,l-1] += self.f(epsx0)*self.f(epsy0)
     # Get indices of the cell closest to position r
     def find_kl(self, r):
         k = int((self.H+r[0])/self.h)
@@ -72,8 +78,8 @@ class Grid:
     def get_eps(self, part, c=None):
         if c is None:
             c = [part.k, part.l]
-        dist_x = part.xh-part.k+self.N/2
-        dist_y = part.yh-part.l+self.N/2
+        dist_x = part.xh-c[0]+self.N/2
+        dist_y = part.yh-c[1]+self.N/2
         return float(dist_x), float(dist_y)
     
     def top_hat(self, x):
@@ -81,4 +87,12 @@ class Grid:
             return 0
         else:
             return 1
+    
+    def f(self, x):
+        if abs(x) < 0.5:
+            return 3/4 - x**2
+        elif abs(x) >= 0.5 and abs(x) < 1.5:
+            return 1/2*(3/2-abs(x))**2
+        else:
+            return 0
     
