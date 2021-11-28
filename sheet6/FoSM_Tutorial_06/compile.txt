@@ -1,0 +1,1 @@
+cc -I/opt/local/include -L/opt/local/lib -lfftw3 smooth_image.c  -o smooth_image
