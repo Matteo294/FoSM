@@ -116,8 +116,8 @@ def ex2():
 
     positions = np.array(positions)
     fig = plt.figure()
-    plt.plot(X[0],X[1],'xr')
     plt.plot(positions[:,0],positions[:,1],'bo')
+    plt.plot(X[0],X[1],'xr')
     plt.xlim(-0.5,0.5)
     plt.ylim(-0.5,0.5)
     plt.show()
@@ -143,14 +143,31 @@ def ex2():
     
     fig = plt.figure()
     plt.plot(dists,abs_accs,'k.')
-    xx = np.linspace(0.01,0.5,1000)
+    xx = np.linspace(0.001,0.5,1000)
     plt.plot(xx,2/xx,'r-')
     plt.xscale('log')
     plt.yscale('log')
     plt.show()
 
-if __name__ == "__main__":
-    ex2()
+    return dists, abs_accs
+
+dists_all = []
+accs_abs_all = []
+for i in range(10):
+    dists, abs_accs = ex2()
+    dists_all.append(dists)
+    accs_abs_all.append(abs_accs)
+    
+    fig = plt.figure()
+    plt.plot(dists_all,accs_abs_all,'k.')
+    xx = np.linspace(0.001,0.5,1000)
+    plt.plot(xx,2/xx,'r-')
+    plt.xscale('log')
+    plt.yscale('log')
+    plt.show()
+
+#if __name__ == "__main__":
+#    ex2()
 
 
 
