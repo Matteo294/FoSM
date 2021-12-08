@@ -22,7 +22,7 @@ def metropolis_mc(p,n,sigma=0.1):
         p_ii = p(x_ii)
         #print(p_ii/p_i)
         r = min(1,p_ii/p_i)
-        print(r)
+        #print(r)
         u = np.random.uniform(0,1,1)
         if u <= r:
             x.append(x_ii)
@@ -34,6 +34,7 @@ def metropolis_mc(p,n,sigma=0.1):
 def ex3():
 
     x = metropolis_mc(pnew,int(1e6),sigma=0.1)
+    xvals = np.linspace(1, 20, 1000)
 
     #print(x)
     print(max(x))
@@ -44,6 +45,7 @@ def ex3():
     Y = exact_inversion(X)
     #plt.hist(Y,bins,density=True,color='r',alpha=0.5,label='exact inversion')
     plt.hist(x,bins,density=True,color='k',label='Metropolis Monte Carlo')
+    plt.plot(xvals, pnew(xvals))
     plt.legend() 
     plt.show()
 
