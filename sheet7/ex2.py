@@ -19,7 +19,7 @@ def midpoint(f,d,n):
     for i in range(D):
         fM[i] = f(M[i])
     # I = sum_i^n**2 1/n**2 f(m_i) where m_i is midpoint in each subcube
-    I = 1/n**2*np.sum(fM)
+    I = 1/n**d*np.sum(fM)
     return I
 
 def monte_carlo_int(f,d,N):
