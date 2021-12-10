@@ -3,40 +3,87 @@
 
 \begin{document}
 \section*{Exercise 1}
-\begin{figure}[h]
-\begin{minipage}{0.3\textwidth}
-    \includegraphics[width=1.2\textwidth]{figures/lib1.eps}
-    \caption{Mersenne Twister 19937}
-\end{minipage}
-\begin{minipage}{0.3\textwidth}
-    \includegraphics[width=1.2\textwidth]{figures/builtin1.eps}
-    \caption{c++ rand()}
-\end{minipage}
-\begin{minipage}{0.3\textwidth}
-    \includegraphics[width=1.2\textwidth]{figures/randu1.eps}
-    \caption{RANDU}
-\end{minipage}
-\end{figure}
-\begin{figure}[h]
-    \begin{minipage}{0.3\textwidth}
-        \includegraphics[width=1.2\textwidth]{figures/lib.eps}
-        \caption{Mersenne Twister 19937}
-    \end{minipage}
-    \begin{minipage}{0.3\textwidth}
-        \includegraphics[width=1.2\textwidth]{figures/builtin.eps}
-        \caption{c++ rand()}
-    \end{minipage}
-    \begin{minipage}{0.3\textwidth}
-        \includegraphics[width=1.2\textwidth]{figures/randu.eps}
-        \caption{RANDU}
-    \end{minipage}
-    \end{figure}
-\end{document}
 
-\section*{exercise 2}
-\begin{figure}
-    \includegraphics{figures/times.png}
+\subsection*{(a)}
+\begin{figure}[h]
+\centering
+\begin{minipage}{0.47\textwidth}
+    \includegraphics[width=1.2\textwidth]{figures/mt19937.eps}
+    \captionof{figure}{mt19937}
+\end{minipage}
+\hfill
+\begin{minipage}{0.47\textwidth}
+    \includegraphics[width=1.2\textwidth]{figures/builtin.eps}
+    \captionof{figure}{c++ rand()}
+\end{minipage}
 \end{figure}
-\begin{figure}
-    \includegraphics{figures/errors.png}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\textwidth]{figures/randu.eps}
+    \captionof{figure}{RANDU}
 \end{figure}
+
+\newpage
+
+\subsection*{(b)}
+
+\begin{figure}[h]
+    \centering
+    \begin{minipage}{0.47\textwidth}
+        \includegraphics[width=1.2\textwidth]{figures/mt19937_zoomed.eps}
+        \caption{mt19937 zoomed}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.47\textwidth}
+        \includegraphics[width=1.2\textwidth]{figures/builtin_zoomed.eps}
+        \caption{c++ rand() zoomed}
+    \end{minipage}
+\end{figure}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figures/randu_zoomed.eps}
+    \caption{RANDU zoomed}
+\end{figure}
+
+\newpage
+\section*{Exercise 2}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.75]{figures/time.eps}
+    \caption{Runtime as a function of the number of dimensions}
+\end{figure}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.75]{figures/error.eps}
+    \caption{Error as a function of the number of dimensions}
+\end{figure}
+
+\newpage
+\section*{Exercise 3}
+
+\begin{figure}[h]
+    \centering
+    \begin{minipage}{0.47\textwidth}
+        \includegraphics[width=1.2\textwidth]{figures/ex3_sigma01.png}
+        \caption{$\sigma = 0.01$}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.47\textwidth}
+        \includegraphics[width=1.2\textwidth]{figures/ex3_sigma02.png}
+        \caption{$\sigma = 0.02$}
+    \end{minipage}
+\end{figure}
+\begin{figure}[h]
+    \centering
+    \begin{minipage}{0.47\textwidth}
+        \includegraphics[width=1.2\textwidth]{figures/ex3_sigma005.png}
+        \caption{$\sigma = 0.05$}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.47\textwidth}
+        \includegraphics[width=1.2\textwidth]{figures/ex3_sigma0001.png}
+        \caption{$\sigma = 0.001$}
+    \end{minipage}
+\end{figure}
+\end{document}

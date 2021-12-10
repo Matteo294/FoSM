@@ -11,6 +11,7 @@ plt.scatter(range(1, len(data_time['mc'])+1), np.log(data_time['mc']), label='Mo
 plt.legend(fontsize=12)
 plt.xlabel('Dimensions', fontsize=14)
 plt.ylabel('log(time) [ns]', fontsize=14)
+plt.savefig("time.eps", dpi=300)
 plt.show()
 
 plt.scatter(range(1, len(data_errs['midpoint'])+1), data_errs['midpoint'], color='blue', label='Midpoint Method')
@@ -18,4 +19,5 @@ plt.scatter(range(1, len(data_errs['mc'])+1), data_errs['mc'], label='Monte Carl
 plt.legend(fontsize=12)
 plt.xlabel('Dimensions', fontsize=14)
 plt.ylabel('Error', fontsize=14)
+plt.savefig("error.eps", dpi=300)
 plt.show()
