@@ -3,6 +3,7 @@
 #include <fstream>
 #include <vector>
 #include <iomanip>
+#include <chrono>
 
 using namespace std;
 
@@ -28,8 +29,8 @@ const double D = 0.5; // Difussion coefficient
 const double eps = 1.0; // RHS member of the equation
 const double T0 = 1.0; // Boundary conditions
 const double L = 1.0; // Grid length
-const int N = 10; // Grid points
-const double h = 1; // Integration step
+const int N = 100; // Grid points
+const double h = 1e-2; // Integration step
 
 int main(){
 
@@ -48,8 +49,11 @@ int main(){
     print_vector(M);
 
     // Search solution x with the Gauss-Jordan algorithm
+    auto begin = chrono::high_resolution_clock::now();
     vector<double> sol = gauss_jordan(A, b);
-    cout << "sol:" << endl;
+    auto end = chrono::high_resolution_clock::now();
+    auto deltaT_midpoint = chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count();
+    cout << "Solution found. Time taken: " << scientific  << setprecision(3) << deltaT_midpoint*1e-9 << defaultfloat << "s. Solution:" << endl;
     print_vector(sol);
 
     // Check if solution x is correct by calculating residuals Ax - b
@@ -79,9 +83,9 @@ vector<vector<double>> build_tridiagonal(int n){
     for(uint i=1; i<n-1; i++){
         A[i].resize(n, 0.0); // Creates other elements of the row
         // Fill row
-        A[i][i-1] = 1;
-        A[i][i] = -2;
-        A[i][i+1] = 1;
+        A[i][i-1] = 1.;
+        A[i][i] = -2.;
+        A[i][i+1] = 1.;
     }
     // Fix first and last rows separately
     A[0].resize(n, 0.0);
@@ -122,17 +126,18 @@ vector<double> gauss_jordan(vector<vector<double>> X, vector<double> b){
     vector<double> indices;
     for(int i=0; i<N; i++){
         indices.push_back(i);
-        X[i].push_back(-b[i]);
     }
 
     // Elimination
     for(uint i=1; i<n; i++){
         for(uint j=0; j<i; j++){
-            c = (double) -X[i][j]/X[j][j];
-            for(uint k=j; k<=n; k++){
-                X[i][k] += (double) c*X[j][k];
-                //print_vector(X);
-                cout << endl;
+            if (X[i][j] != 0){
+                c = (double) -X[i][j]/X[j][j];
+                for(uint k=j; k<n; k++){
+                    X[i][k] += (double) c*X[j][k];
+                    //print_vector(X);
+                }
+                b[i] += (double) c*b[j];
             }
         }
         // If this row is in the wrong position (i.e. element on the diagonal is 0) put it at the end and redo with the next row
@@ -149,7 +154,7 @@ vector<double> gauss_jordan(vector<vector<double>> X, vector<double> b){
 
     // Substitution
     for(int i=N-1; i>=0; i--){
-        sol[i] = -X[i][n]/X[i][i];
+        sol[i] = b[i]/X[i][i];
         for(uint j=i+1; j<n; j++){
             sol[i] -= X[i][j]/X[i][i]*sol[j];
         }
@@ -172,6 +177,7 @@ void print_vector(vector<vector<double>> X){
         for(uint j=0; j<X[i].size(); j++){
             cout << X[i][j] << " ";
         }
-        cout << endl << endl;
+        cout << endl;
     }
+    cout << endl;
 }
