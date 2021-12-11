@@ -7,55 +7,62 @@
 using namespace std;
 
 // Performs multiplication between the tridiagonal matrix and the vector
-vector<double> tridiag_multi(vector<vector<double>> M, vector<double> T);
+vector<double> tridiagonal_multiplication(vector<vector<double>> M, vector<double> T);
+
 // Build the tridiagonal matrix with Dirichlet boundary conditions
-vector<vector<double>> build_tridiag(int n);
+vector<vector<double>> build_tridiagonal(int n);
+
 // Build the matrix of 3 vectors starting from the tridiagonal matrix
-vector<vector<double>> build_sparse(vector<vector<double>> A);
-// Gaussian elimination (forward elimination backward subsitution)
-vector<double> gaussian_elimination(vector<vector<double>> X, vector<double> b);
+vector<vector<double>> build_trivector(vector<vector<double>> A);
+
+// Gauss-Jordan method (forward elimination backward subsitution)
+vector<double> gauss_jordan(vector<vector<double>> X, vector<double> b);
+
 // Print 1D vector
 void print_vector(vector<double> x);
+
 // Print 2D vector (override previous)
 void print_vector(vector<vector<double>> X);
 
-const double D = 0.5;
-const double eps = 1.0;
-const double T0 = 1.0;
-const double L = 1.0;
-const int N = 10;
-const double h = 1;
+const double D = 0.5; // Difussion coefficient
+const double eps = 1.0; // RHS member of the equation
+const double T0 = 1.0; // Boundary conditions
+const double L = 1.0; // Grid length
+const int N = 10; // Grid points
+const double h = 1; // Integration step
 
 int main(){
 
-    vector<vector<double>> A = build_tridiag(N);
-    vector<vector<double>> M = build_sparse(A);
-
+    vector<vector<double>> A = build_tridiagonal(N); // prepare matrix A such that Ax = b
+    vector<vector<double>> M = build_trivector(A); // transform tridiagonal matrix A in a matrix M of three vectors containing the diagonals
+    // Prepare RHS of the matrix equation
     vector<double> b(N, 0.0);
     for(int i=1; i<N-1; i++) b[i] = -h*h/D*eps;
     b[0] = T0;
     b[N-1] = T0;
 
+    // Some printing
     cout << "A:" << endl;
     print_vector(A);
-    cout << endl;
-    vector<double> sol = gaussian_elimination(A, b);
     cout << "M: "<< endl;
     print_vector(M);
-    cout << endl;
+
+    // Search solution x with the Gauss-Jordan algorithm
+    vector<double> sol = gauss_jordan(A, b);
     cout << "sol:" << endl;
     print_vector(sol);
-    cout << endl;
-    vector<double> estimateb = tridiag_multi(M, sol);
+
+    // Check if solution x is correct by calculating residuals Ax - b
+    vector<double> estimated_b = tridiagonal_multiplication(M, sol);
     cout << "Residuals: " << endl;
-    for(int i=0; i<N; i++) cout << estimateb[i] - b[i] << " ";
+    for(int i=0; i<N; i++) cout << estimated_b[i] - b[i] << " ";
     cout << endl;
 
     return 0;
 }
 
 // Performs multiplication between the tridiagonal matrix and the vector
-vector<double> tridiag_multi(vector<vector<double>> M, vector<double> T){
+vector<double> tridiagonal_multiplication(vector<vector<double>> M, vector<double> T){
     uint n = T.size();
     vector<double> res(n, 0.0);
     for(uint i=1; i<n-1; i++){
@@ -67,10 +74,11 @@ vector<double> tridiag_multi(vector<vector<double>> M, vector<double> T){
 }
 
 // Build the tridiagonal matrix with Dirichlet boundary conditions
-vector<vector<double>> build_tridiag(int n){
-    vector<vector<double>> A(n); // create one column
+vector<vector<double>> build_tridiagonal(int n){
+    vector<vector<double>> A(n); // Creates one column
     for(uint i=1; i<n-1; i++){
-        A[i].resize(n, 0.0); // Create other elements of the row
+        A[i].resize(n, 0.0); // Creates other elements of the row
+        // Fill row
         A[i][i-1] = 1;
         A[i][i] = -2;
         A[i][i+1] = 1;
@@ -84,7 +92,7 @@ vector<vector<double>> build_tridiag(int n){
 }
 
 // Build the matrix of 3 vectors starting from the tridiagonal matrix
-vector<vector<double>> build_sparse(vector<vector<double>> A){
+vector<vector<double>> build_trivector(vector<vector<double>> A){
     int n = A[0].size();
     vector<vector<double>> M(n);
     for(uint i=1; i<n-1; i++){
@@ -105,12 +113,11 @@ vector<vector<double>> build_sparse(vector<vector<double>> A){
     return M;
 }
 
-// Gaussian elimination (forward elimination backward subsitution)
-vector<double> gaussian_elimination(vector<vector<double>> X, vector<double> b){
+// Gauss-Jordan method (forward elimination backward subsitution)
+vector<double> gauss_jordan(vector<vector<double>> X, vector<double> b){
     int n = X[0].size();
-    double c;
-    vector<double> sol(n, 0.0);
-    double a;
+    double c; // auxiliary variable useful when swapping rows
+    vector<double> sol(n, 0.0); // solution vector
 
     vector<double> indices;
     for(int i=0; i<N; i++){
@@ -124,7 +131,7 @@ vector<double> gaussian_elimination(vector<vector<double>> X, vector<double> b){
             c = (double) -X[i][j]/X[j][j];
             for(uint k=j; k<=n; k++){
                 X[i][k] += (double) c*X[j][k];
-                print_vector(X);
+                //print_vector(X);
                 cout << endl;
             }
         }
@@ -134,7 +141,6 @@ vector<double> gaussian_elimination(vector<vector<double>> X, vector<double> b){
             c = b[i];
             b[i] = b[n-1];
             b[n-1] = c;
-            a = indices[i];
             indices[i] = indices[n-1];
             indices[n-1] = indices[i];
             i -= 1; // re-do this row index with the new row
@@ -149,8 +155,6 @@ vector<double> gaussian_elimination(vector<vector<double>> X, vector<double> b){
         }
     }
 
-    //for(int i=0; i<N; i++) cout << newidx[i] << endl;
-
     return sol;
 }
 
@@ -159,7 +163,7 @@ void print_vector(vector<double> x){
     for(uint i=0; i<x.size(); i++){
         cout << x[i] << " ";
     }
-    cout << endl;
+    cout << endl << endl;
 }
 
 // Print 2D vector (overrides 1D)
@@ -168,6 +172,6 @@ void print_vector(vector<vector<double>> X){
         for(uint j=0; j<X[i].size(); j++){
             cout << X[i][j] << " ";
         }
-        cout << endl;
+        cout << endl << endl;
     }
 }
