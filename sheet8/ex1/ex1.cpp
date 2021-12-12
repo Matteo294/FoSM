@@ -19,20 +19,33 @@ vector<vector<double>> build_trivector(vector<vector<double>> A);
 // Gauss-Jordan method (forward elimination backward subsitution)
 vector<double> gauss_jordan(vector<vector<double>> X, vector<double> b);
 
+// Decomposes matrix into diagonal, upper triangular, lower triangular, in order to perform Jacobi iteration
+void DLU_decomposition(vector<vector<double>> &A, vector<double> &D, vector<vector<double>> &L, vector<vector<double>> &U);
+
+void Jacobi_iteration(vector<double> D, vector<vector<double>> L, vector<vector<double>> U, vector<double> &x, vector<double> b);
+
 // Print 1D vector
 void print_vector(vector<double> x);
 
-// Print 2D vector (override previous)
+// Print 2D vector (overrides 1D)
 void print_vector(vector<vector<double>> X);
 
 const double D = 0.5; // Difussion coefficient
 const double eps = 1.0; // RHS member of the equation
 const double T0 = 1.0; // Boundary conditions
 const double L = 1.0; // Grid length
-const int N = 100; // Grid points
-const double h = 1e-2; // Integration step
+const int N = 8; // Grid points
+const double h = (double) L/N; // Integration step
+const double n_iter_Jacobi = 30; // Jacobi iterations
+
+ofstream datafile;
 
 int main(){
+
+    datafile.open("data.csv");
+    datafile << "x,gauss";
+    for(int i=0; i<N; i++) datafile << ",jacobi" << i;
+    datafile << endl;
 
     vector<vector<double>> A = build_tridiagonal(N); // prepare matrix A such that Ax = b
     vector<vector<double>> M = build_trivector(A); // transform tridiagonal matrix A in a matrix M of three vectors containing the diagonals
@@ -50,17 +63,36 @@ int main(){
 
     // Search solution x with the Gauss-Jordan algorithm
     auto begin = chrono::high_resolution_clock::now();
-    vector<double> sol = gauss_jordan(A, b);
+    vector<double> sol1 = gauss_jordan(A, b);
     auto end = chrono::high_resolution_clock::now();
     auto deltaT_midpoint = chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count();
     cout << "Solution found. Time taken: " << scientific  << setprecision(3) << deltaT_midpoint*1e-9 << defaultfloat << "s. Solution:" << endl;
-    print_vector(sol);
+    print_vector(sol1);
 
     // Check if solution x is correct by calculating residuals Ax - b
-    vector<double> estimated_b = tridiagonal_multiplication(M, sol);
+    vector<double> estimated_b = tridiagonal_multiplication(M, sol1);
     cout << "Residuals: " << endl;
     for(int i=0; i<N; i++) cout << estimated_b[i] - b[i] << " ";
-    cout << endl;
+    cout << endl << endl;
+
+    vector<double> diag(N, 0.0);
+    vector<vector<double>> L_mat(N);
+    vector<vector<double>> U_mat(N);
+    vector<double> sol2(N, 0.0);
+    for(int i=0; i<N; i++){
+        L_mat[i].resize(N, 0.0);
+        U_mat[i].resize(N, 0.0);
+    }
+    DLU_decomposition(A, diag, L_mat, U_mat);
+    print_vector(diag);
+    print_vector(L_mat);
+    print_vector(U_mat);
+    for(uint i=0; i<n_iter_Jacobi; i++) Jacobi_iteration(diag, L_mat, U_mat, sol2, b);
+    
+    estimated_b = tridiagonal_multiplication(M, sol2);
+    cout << "Residuals: " << endl;
+    for(int i=0; i<N; i++) cout << estimated_b[i] - b[i] << " ";
+    cout << endl << endl;
 
     return 0;
 }
@@ -161,6 +193,39 @@ vector<double> gauss_jordan(vector<vector<double>> X, vector<double> b){
     }
 
     return sol;
+}
+
+// Decomposes matrix into diagonal, upper triangular, lower triangular, in order to perform Jacobi iteration
+void DLU_decomposition(vector<vector<double>> &A, vector<double> &D, vector<vector<double>> &L, vector<vector<double>> &U){
+    uint n = A.size();
+    for(uint i=0; i<n; i++){
+        D[i] = A[i][i];
+        for(uint j=0; j<n; j++){
+            if(i>j) L[i][j] = -A[i][j];   
+            else if (i<j) U[i][j] = -A[i][j];
+        }
+    }
+}
+
+void Jacobi_iteration(vector<double> D, vector<vector<double>> L, vector<vector<double>> U, vector<double> &x, vector<double> b){
+    int n = x.size();
+    double s;
+    vector<double> delta(n, 0.0);
+    for(int i=0; i<n; i++){
+        delta[i] = (double) 1./D[i]*b[i]; 
+        s = 0.0;
+        for(int j=0; j<n; j++){
+            s += (double) U[i][j]*x[j];
+            s += (double) L[i][j]*x[j];
+        }
+        delta[i] += (double) 1./D[i]*s;
+    }
+    for(int i=0; i<n; i++){
+        x[i] = delta[i];
+        datafile << "," << x[i]; 
+    }
+    datafile << endl;
+
 }
 
 // Print 1D vector
