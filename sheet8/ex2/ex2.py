@@ -7,6 +7,9 @@ N3 = 3
 N4 = 2
 L = 1
 
+def Jacobi_Iteration(x, Dinv, L, U, b):
+    return np.einsum("ij,j", Dinv, b) + np.einsum("ij,jk,k", Dinv, L+U, x)
+
 grid1 = np.linspace(0, L, N1)
 grid2 = np.linspace(0, L, N2)
 grid3 = np.linspace(0, L, N3)
@@ -60,7 +63,5 @@ A2 = np.einsum("ij,jk,kl->il", R1, A1, P1)
 A3 = np.einsum("ij,jk,kl->il", R2, A2, P2)
 A4 = np.einsum("ij,jk,kl->il", R3, A3, P3)
 
-print(A1)
-print(A2)
-print(A3)
-print(A4)
+print("start v-cycle")
+Jacobi_Iteration(x,)
