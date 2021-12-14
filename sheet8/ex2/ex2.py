@@ -114,3 +114,5 @@ for n in range(ncycles):
     for _ in range(nrelax):
         x1 = Jacobi_Iteration(x1, D_inv1, L1, U1, b1)
     print("Mean squared error", sum(np.einsum("ij,j", A1, x1) - b1)**2)
+plt.plot(np.arange(0, L, h), x1)
+plt.show()
