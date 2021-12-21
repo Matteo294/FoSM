@@ -6,12 +6,12 @@ N2 = 5
 N3 = 3
 N4 = 2
 L = 1
-D = 1
-h = L/N1
+D = 0.5
+h = 2*L/(N1-1)
 eps = 1
 nrelax = 5
 phi0 = 1
-ncycles = 5
+ncycles = 20
 
 def Jacobi_Iteration(x, Dinv, L, U, b):
     #print(x.shape, Dinv.shape, L.shape, U.shape, b.shape)
@@ -96,7 +96,16 @@ b[0] = phi0
 b[N1-1] = phi0
 x = np.zeros(N1)
 
+# Solve
+solutions = [[] for _ in range(ncycles)]
 print("Starting v-cycle")
-for _ in range(ncycles):
+for n in range(ncycles):
     x = solve_Vcycle(x, A, b)
     print("Residuals:", b - mat_vec_prod(A, x))
+    solutions[n] = x
+
+# Plotting
+gridpoints = np.linspace(-L, L, N1)
+for n in range(ncycles):
+    plt.plot(gridpoints, solutions[n])
+plt.show()
