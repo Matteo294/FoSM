@@ -1,0 +1,5 @@
+to compile:
+gcc -Wall md.c -o md
+
+to run:
+./md
