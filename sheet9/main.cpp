@@ -29,10 +29,9 @@ const int N1d = 8; // Number of particles for dimension
 const int Npart = N1d*N1d*N1d; // Total number of particles
 const int Nsteps = (int) 60000; // Simulation steps
 const double m = 1.0; // Mass of the particles
-const double Temp = 80.0; // K
+double Temp; // K (pass by terminal)
 const double kb = 1.381e-23/efact; // Boltzmann constant (K^-1)
 const double dt = 1e-2; // Integration step length
-const double K_goal = 1.5*Npart*kb*Temp; // Thermal bath keeps kinetic energy constant
 
 #if RUN_PARALLEL == 1
     const int Nthreads = 16; // Number of parallel threads
@@ -43,9 +42,21 @@ const double K_goal = 1.5*Npart*kb*Temp; // Thermal bath keeps kinetic energy co
 vector<vector<double>> r(Npart); // Positions matrix
 vector<vector<double>> v(Npart); // Velocities matrix
 
-int main(int argc, char* argv[]){
+int main(int argc, const char* argv[]){
 
+    if (argc != 3) cout << "Please when running pass mode (0 or 1) and temperature (value), see run.sh for example" << endl;
+
+    const int mode = atoi(argv[1]); // 0 for microcanonical, 1 for canonical (pass by terminal when running)
+    Temp = atoi(argv[2]);
+
+    if (mode == 0) cout << "Microcanonical ensemble with energy: " << 1.5*kb*Npart*Temp << endl;
+    else cout << "Canonical ensemble with temperature: " << Temp << " K" << endl;
     
+    double T, K, V, E, avgE, avgT, avgK, avgV;
+    // Variables to store time
+    auto start = chrono::high_resolution_clock::now();
+    auto stop = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<std::chrono::seconds>(stop-start).count();
 
     // Initialize files to store data
     ofstream datafile, posfile_before, posfile_after;
@@ -58,9 +69,6 @@ int main(int argc, char* argv[]){
 
     omp_set_num_threads(Nthreads); // Set number of parallel threads
 
-    //vector<double> force(3, 0.0);
-    double T, K, V, E;
-
     init_pos();
     init_vel(); 
 
@@ -72,10 +80,11 @@ int main(int argc, char* argv[]){
     E = E0;
     T = K/(1.5*kb*Npart);
 
+    avgE = 0.0;
+    avgK = 0.0;
+    avgT = 0.0;
+    avgV = 0.0;
     // Integration cycles
-    auto start = chrono::high_resolution_clock::now();
-    auto stop = chrono::high_resolution_clock::now();
-    auto duration = chrono::duration_cast<std::chrono::seconds>(stop-start).count();
     for(int i=0; i<Nsteps; i++){
 
         // Kick 1
@@ -89,8 +98,8 @@ int main(int argc, char* argv[]){
             for(int j=0; j<3; j++){
                 r[n][j] += dt*v[n][j];
                 // Periodic boundary conditions
-                //if (r[n][j] > 5*N1d) r[n][j] = r[n][j] - 5*N1d;
-                //if (r[n][j] < 0) r[n][j] = 5*N1d + r[n][j];
+                //while (r[n][j] >= 5*N1d) r[n][j] -= (double) 5*N1d;
+                //while (r[n][j] < 0) r[n][j] += (double) 5*N1d;
                 if ((r[n][j] > 5*N1d) || (r[n][j] < 0)) {r[n][j] -= dt*v[n][j]; v[n][j] = -v[n][j];}
             }
         }
@@ -106,6 +115,7 @@ int main(int argc, char* argv[]){
         K = calculate_kinetic();
         E = K+V;
         T = K/(1.5*kb*Npart);
+
         datafile << K << "," << V << "," << E << "," << T << "," << (E-E0)/E0 << endl;
 
         if (i % 1000 == 0){
@@ -115,14 +125,20 @@ int main(int argc, char* argv[]){
             start = chrono::high_resolution_clock::now();
         }
 
-        // Thermal bath - comment this part if you want to work in the microcanonical ensemble
-        if (i % 100 == 0){
-            for(int j=0; j<Npart; j++){
-                for (int k=0; k<3; k++) v[j][k] *= sqrt(Temp/T);
+        // Thermal bath
+        if (mode == 1){
+            if (i % 100 == 0){
+                for(int j=0; j<Npart; j++){
+                    for (int k=0; k<3; k++) v[j][k] *= sqrt(Temp/T);
+                }
             }
         }
-        // ----------------------------------------------------------------------------------
+
+        // Average energy
+        if (i >= Nsteps - 10000) {avgE += E; avgK += K; avgV += V; avgT += T;}
     }
+
+    cout << "Average energy: " << avgE/10000. << " Average kinetic: " << avgK/10000. << " Average potential: " << avgV/10000. << " Average temperature: " << avgT/10000. << endl << endl;
 
     print_pos_to_file(posfile_after);
 
