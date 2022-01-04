@@ -1,0 +1,14 @@
+395 4 10000 64 
+Canonical ensemble with temperature: 395 K
+0% Cycle time: 0s Energy: 340.372 Temperature: 423.673
+10% Cycle time: 0s Energy: 315.13 Temperature: 392.905
+20% Cycle time: 0s Energy: 315.748 Temperature: 396.117
+30% Cycle time: 0s Energy: 314.504 Temperature: 396.254
+40% Cycle time: 0s Energy: 314.087 Temperature: 394.469
+50% Cycle time: 0s Energy: 314.166 Temperature: 395.459
+60% Cycle time: 0s Energy: 315.612 Temperature: 393.814
+70% Cycle time: 0s Energy: 316.026 Temperature: 396.511
+80% Cycle time: 0s Energy: 315.399 Temperature: 395.235
+90% Cycle time: 0s Energy: 314.52 Temperature: 395.755
+Average energy: 314.902 Average kinetic: 317.398 Average potential: -2.49548 Average temperature: 395.024
+

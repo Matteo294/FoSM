@@ -1,0 +1,14 @@
+80 4 10000 64 
+Canonical ensemble with temperature: 80 K
+0% Cycle time: 0s Energy: 61.3397 Temperature: 76.3976
+10% Cycle time: 0s Energy: 57.0129 Temperature: 76.7255
+20% Cycle time: 0s Energy: 57.4827 Temperature: 78.5088
+30% Cycle time: 0s Energy: 59.4692 Temperature: 82.4495
+40% Cycle time: 0s Energy: 61.2988 Temperature: 82.2322
+50% Cycle time: 0s Energy: 58.8253 Temperature: 79.4803
+60% Cycle time: 0s Energy: 58.4333 Temperature: 81.6477
+70% Cycle time: 0s Energy: 56.8848 Temperature: 79.7768
+80% Cycle time: 0s Energy: 55.7939 Temperature: 80.7962
+90% Cycle time: 0s Energy: 50.1509 Temperature: 78.7074
+Average energy: 57.6438 Average kinetic: 64.3604 Average potential: -6.71663 Average temperature: 80.101
+

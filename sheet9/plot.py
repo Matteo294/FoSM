@@ -1,5 +1,8 @@
 from pandas import read_csv
 from matplotlib import pyplot as plt 
+import sys
+
+mode = int(sys.argv[1]) # 0 for microcanonical 1 for canonical
 
 data = read_csv("data.csv")
 n = range(len(data['K']))

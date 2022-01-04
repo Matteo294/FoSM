@@ -23,13 +23,10 @@ const double xfact = 3.4e-10; // m (length)
 const double efact = 1.65e-21; // J (energy)
 const double mfact = 6.69e-26; // kg (mass)
 const double vfact = sqrt(efact/mfact); // m/s (speed)
+double Temp; int N1d, Nsteps, Npart; // Pass by terminal, see .sh files
 
 // Constants
-const int N1d = 8; // Number of particles for dimension
-const int Npart = N1d*N1d*N1d; // Total number of particles
-const int Nsteps = (int) 60000; // Simulation steps
 const double m = 1.0; // Mass of the particles
-double Temp; // K (pass by terminal)
 const double kb = 1.381e-23/efact; // Boltzmann constant (K^-1)
 const double dt = 1e-2; // Integration step length
 
@@ -39,15 +36,21 @@ const double dt = 1e-2; // Integration step length
     const int Nthreads = 1;
 #endif 
 
-vector<vector<double>> r(Npart); // Positions matrix
-vector<vector<double>> v(Npart); // Velocities matrix
+vector<vector<double>> r; // Positions matrix
+vector<vector<double>> v; // Velocities matrix
 
 int main(int argc, const char* argv[]){
 
-    if (argc != 3) cout << "Please when running pass mode (0 or 1) and temperature (value), see run.sh for example" << endl;
+    if (argc != 5) cout << "Please see the .sh files to understand how to run the simulations" << endl;
 
     const int mode = atoi(argv[1]); // 0 for microcanonical, 1 for canonical (pass by terminal when running)
     Temp = atoi(argv[2]);
+    N1d = atoi(argv[3]);
+    Nsteps = atoi(argv[4]);
+    Npart = N1d*N1d*N1d;
+
+    r.resize(Npart);
+    v.resize(Npart);
 
     if (mode == 0) cout << "Microcanonical ensemble with energy: " << 1.5*kb*Npart*Temp << endl;
     else cout << "Canonical ensemble with temperature: " << Temp << " K" << endl;

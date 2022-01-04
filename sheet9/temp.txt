@@ -1,0 +1,13 @@
+Microcanonical ensemble with energy: 64.2793
+0% Cycle time: 0s Energy: 62.8223 Temperature: 78.2428
+10% Cycle time: 0s Energy: 62.8276 Temperature: 86.8387
+20% Cycle time: 0s Energy: 62.8227 Temperature: 84.401
+30% Cycle time: 0s Energy: 62.8195 Temperature: 84.1531
+40% Cycle time: 0s Energy: 62.8238 Temperature: 83.3371
+50% Cycle time: 0s Energy: 62.8415 Temperature: 88.4861
+60% Cycle time: 0s Energy: 62.8299 Temperature: 85.6711
+70% Cycle time: 0s Energy: 62.8307 Temperature: 84.6726
+80% Cycle time: 0s Energy: 62.8337 Temperature: 86.3605
+90% Cycle time: 0s Energy: 62.8316 Temperature: 83.6248
+Average energy: 62.8253 Average kinetic: 68.4382 Average potential: -5.61289 Average temperature: 85.1761
+
