@@ -9,14 +9,14 @@
 /* rescaling: all masses / m --> equals m = 1 in the relevant eqs.; all positions / sigma; all energies / epsilon; all velocities / sqrt(epsilon/m) 
  */
 
-/* Initialize those factors as global variables
+/* Initialize those factors as global variables (actually not needed)
  */
-const double m = 6.69e-26; // kg
-const double epsilon = 1.65e-21; // J
-const double sigma = 3.4e-10; // m
-const double vscale_mic_can = 157.05;
-const double k_B = 1.38e-23; // J/K
-
+/*const double m = 6.69e-26; // kg
+ *const double epsilon = 1.65e-21; // J
+ *const double sigma = 3.4e-10; // m
+ *const double vscale_mic_can = 157.05;
+ *const double k_B = 1.38e-23; // J/K
+ */
 
 /* this is our data type for storing the information for the particles
  */
@@ -35,6 +35,7 @@ particle;
  */
 double gaussian_rnd(void)
 {
+  srand48(42);
   double x, y;
 
   do
@@ -51,7 +52,7 @@ double gaussian_rnd(void)
 
 /* This function initializes our particle set.
  */
-void initialize(particle * p, int nperdim, double boxsize, double temp, double epsilon_in_Kelvin)
+void initialize(particle *p, int nperdim, double boxsize, double temp, double epsilon_in_Kelvin)
 {
   int i, j, k, n, l = 0;
   double spacing = boxsize/nperdim;
@@ -67,12 +68,11 @@ void initialize(particle * p, int nperdim, double boxsize, double temp, double e
 	  
 	      for (l = 0; l < 3; l++)
             {
-
               p[n].vel[l] = sigma_prime * gaussian_rnd();
             }
 	  
-
           n++;
+
         }
 }
 
@@ -93,7 +93,7 @@ void kick(particle *p, int ntot, double dt)
 /* This function drifts the particles with their velocities for the given time interval.
  * Afterwards, the particles are mapped periodically back to the box if needed.
  */
-void drift(particle * p, int ntot, double boxsize, double dt)
+void drift(particle *p, int ntot, double boxsize, double dt)
 {
   int i, k;
 
@@ -104,9 +104,9 @@ void drift(particle * p, int ntot, double boxsize, double dt)
         p[i].pos[k] += p[i].vel[k] * dt;
 
         // map them escaped particles back into box; positions can go from 0 to boxsize
-        if(p[i].pos[k] >= boxsize)
+        while(p[i].pos[k] >= boxsize)
             p[i].pos[k] -= boxsize;
-        if(p[i].pos[k] < 0)
+        while(p[i].pos[k] < 0)
             p[i].pos[k] += boxsize;
 
       }
@@ -119,7 +119,7 @@ void drift(particle * p, int ntot, double boxsize, double dt)
 /* This function calculates the potentials and forces for all particles. For simplicity,
  * we do this by going through all particle pairs i-j, and then adding the contributions both to i and j.
  */
-void calc_forces(particle * p, int ntot, double boxsize, double rcut)
+void calc_forces(particle *p, int ntot, double boxsize, double rcut)
 {
   int i, j, k;
   double rcut2 = rcut * rcut;
@@ -143,9 +143,10 @@ void calc_forces(particle * p, int ntot, double boxsize, double rcut)
 
   /* sum over all distinct pairs */
   for(i = 0; i < ntot; i++)
-    for(j = i + 1; j < ntot; j++)
+    for(j = i+1; j < ntot; j++)
       {
-        for(k = 0, r2 = 0; k < 3; k++)
+        r2 = 0;
+        for(k = 0; k < 3; k++)
           {
        
             dr[k] = p[i].pos[k] - p[j].pos[k]; 
@@ -159,7 +160,7 @@ void calc_forces(particle * p, int ntot, double boxsize, double rcut)
             if(dr[k] < -0.5 * boxsize)
                 dr[k] += boxsize;
               
-                 r2 += pow(dr[k],2);
+            r2 += pow(dr[k],2);
                   
           }
 
@@ -172,7 +173,7 @@ void calc_forces(particle * p, int ntot, double boxsize, double rcut)
             p[i].pot += V;
             p[j].pot += V;
 
-          }
+          
         	   
         for(k = 0; k < 3; k++)
           {
@@ -182,6 +183,7 @@ void calc_forces(particle * p, int ntot, double boxsize, double rcut)
             p[j].acc[k] -= a; // a_ij = V(r_ij) per def, and a_ij = -a_ji
 
           }
+          }
       }
 }
 
@@ -189,7 +191,7 @@ void calc_forces(particle * p, int ntot, double boxsize, double rcut)
 /* This function calculates the total kinetic and total potential energy, averaged per particle.
  * It also returns the instantanous kinetic temperature.
  */
-void calc_energies(particle * p, int ntot, double epsilon_in_Kelvin, double *ekin, double *epot, double *temp)
+void calc_energies(particle *p, int ntot, double epsilon_in_Kelvin, double *ekin, double *epot, double *temp)
 {
   *ekin = 0; // need to set 0 bc otherwise takes old values in // why do we actually even take ekin etc as input? so that it can be pointed to also outside the function?
   *epot = 0;
@@ -208,9 +210,9 @@ void calc_energies(particle * p, int ntot, double epsilon_in_Kelvin, double *eki
 
   }
 
-  *ekin = *ekin/ntot;
-  *epot = *epot/ntot; // normalized per particle
-  *temp = 2./3. * *ekin * epsilon_in_Kelvin; // * epsilon bc Ekin is in dimless and for that temp is in kelvin // formula 9.13 in script 
+  *ekin /= ntot; 
+  *epot /= ntot; // normalized per particle
+  *temp = 2/3 * *ekin * epsilon_in_Kelvin; // * epsilon bc Ekin is in dimless and for that temp is in kelvin // formula 9.13 in script 
 
 }
 
@@ -220,7 +222,7 @@ void calc_energies(particle * p, int ntot, double epsilon_in_Kelvin, double *eki
 /*
  * main driver routine
  */
-int main()
+int main(void)
 {
   double epsilon_in_Kelvin = 120.0;     /* energy scale in Lennard Jones potential       */
   int N1d = 8;                          /* particles per dimension                       */
