@@ -56,6 +56,7 @@ int main(int argc, const char* argv[]){
     else cout << "Canonical ensemble with temperature: " << Temp << " K" << endl;
     
     double T, K, V, E, avgE, avgT, avgK, avgV;
+
     // Variables to store time
     auto start = chrono::high_resolution_clock::now();
     auto stop = chrono::high_resolution_clock::now();
@@ -68,7 +69,7 @@ int main(int argc, const char* argv[]){
     posfile_before.open("positions_before.csv");
     posfile_after.open("positions_after.csv");
     posfile_before << "x,y,z" << endl;
-    posfile_after << "x,y,z" << endl;
+    posfile_after << "x,y,z" << endl; 
 
     omp_set_num_threads(Nthreads); // Set number of parallel threads
 
@@ -101,9 +102,8 @@ int main(int argc, const char* argv[]){
             for(int j=0; j<3; j++){
                 r[n][j] += dt*v[n][j];
                 // Periodic boundary conditions
-                //while (r[n][j] >= 5*N1d) r[n][j] -= (double) 5*N1d;
-                //while (r[n][j] < 0) r[n][j] += (double) 5*N1d;
-                if ((r[n][j] > 5*N1d) || (r[n][j] < 0)) {r[n][j] -= dt*v[n][j]; v[n][j] = -v[n][j];}
+                while (r[n][j] >= 5*N1d) r[n][j] -= (double) 5*N1d;
+                while (r[n][j] < 0) r[n][j] += (double) 5*N1d;
             }
         }
         // Kick 2
@@ -119,7 +119,7 @@ int main(int argc, const char* argv[]){
         E = K+V;
         T = K/(1.5*kb*Npart);
 
-        datafile << K << "," << V << "," << E << "," << T << "," << (E-E0)/E0 << endl;
+        datafile << K/Npart << "," << V/Npart << "," << E/Npart << "," << T << "," << (E-E0)/E0 << endl;
 
         if (i % 1000 == 0){
             stop = chrono::high_resolution_clock::now();
@@ -188,7 +188,11 @@ vector<double> calculate_force(int i){
     double dist = 0.0;
     for(int j=0; j<r.size(); j++){
         if (i != j){
-            for(int k=0; k<3; k++) deltar[k] = r[i][k] - r[j][k];
+            for(int k=0; k<3; k++){
+                deltar[k] = r[i][k] - r[j][k];
+                if (deltar[k] > 0.5*5.0*N1d) deltar[k] -= 5.0*N1d;
+                else if (deltar[k] < -0.5*5.0*N1d) deltar[k] += 5.0*N1d;
+            }
             dist = norm3d(deltar);
             for(int k=0; k<3; k++){
                 if (dist < 10.0) force[k] += (double) 24.0 * (2*pow(1.0/dist, 13) - pow(1.0/dist, 7)) * deltar[k]/dist;
