@@ -10,12 +10,12 @@ vector<double> getFlux(vector<double> q);
 double get_dt(vector<vector<double>> q);
 
 const double L = 1.0;
-const int Nx = 1000;
+const int Nx = 100;
 const double rho0l=1.0, p0l=1.0, u0l=0.0;
 const double rho0r=0.125, p0r=0.1, u0r=0.0;
 const double adiab_idx=1.4;
 const double tsim=0.2;
-const double CFL=0.5;
+const double CFL=0.9;
 const double dx = (double) L/Nx;
 
 int main(){
@@ -124,7 +124,7 @@ double get_dt(vector<vector<double>> q){
     double vmax = 0;
     double v;
     for(auto val: q){
-        v = abs(val[1]/val[0]) + sqrt((double) adiab_idx*(adiab_idx-1) * (val[2] - (double) 0.5*val[1]*val[1]/val[0]) / val[0]);
+        v = abs(val[1]/val[0]) + sqrt((double) adiab_idx*(adiab_idx-1.) * (val[2] - (double) 0.5*val[1]*val[1]/val[0]) / val[0]);
         if (v > vmax) vmax = v;
     }
     return (double) CFL * dx / vmax;

@@ -17,7 +17,7 @@ def animate_p(i):
     pressure.set_data(data[i]['x'], data[i]['p'])
     return pressure,
 
-writervideo = animation.FFMpegWriter(fps=60)
+writervideo = animation.FFMpegWriter(fps=15)
 
 
 with open('Riemann.txt') as f:
